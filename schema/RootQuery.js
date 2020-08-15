@@ -6,22 +6,36 @@ const {
   GraphQLList,
   GraphQLNonNull,
 } = graphql;
-
+const { AuthenticationError } = require("apollo-server");
 // Object Types
 const { UserType } = require("./ObjectType");
 
 // models
 const { User } = require("../models");
 
+// modules
+const checkAuth = require("../util/checkAuth");
+
+// sequelize
+const { Op } = require("sequelize");
 module.exports = new GraphQLObjectType({
   name: "RootQueryType",
   fields: {
     // get all users
     getUsers: {
       type: new GraphQLList(UserType),
-      async resolve() {
+      async resolve(_, __, context) {
+        const { errors, valid, user } = checkAuth(context);
+        if (!valid) {
+          throw new AuthenticationError("Unauthorized to take this action", {
+            errors,
+          });
+        }
+        console.log(user);
         try {
-          const users = await User.findAll();
+          const users = await User.findAll({
+            where: { username: { [Op.ne]: user.username } },
+          });
           return users;
         } catch (err) {
           console.log(err);
