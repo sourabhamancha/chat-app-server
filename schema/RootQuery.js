@@ -25,13 +25,7 @@ module.exports = new GraphQLObjectType({
     getUsers: {
       type: new GraphQLList(UserType),
       async resolve(_, __, context) {
-        const { errors, valid, user } = checkAuth(context);
-        if (!valid) {
-          throw new AuthenticationError("Unauthorized to take this action", {
-            errors,
-          });
-        }
-        console.log(user);
+        const user = checkAuth(context);
         try {
           const users = await User.findAll({
             where: { username: { [Op.ne]: user.username } },
