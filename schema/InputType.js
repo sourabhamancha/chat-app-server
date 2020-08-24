@@ -32,3 +32,12 @@ module.exports.LoginUserInputType = new GraphQLInputObjectType({
     password: { type: new GraphQLNonNull(GraphQLString) },
   }),
 });
+
+module.exports.SendMessageInputType = new GraphQLInputObjectType({
+  name: "SendMessageInputType",
+  description: "Input payload for sending a new message",
+  fields: () => ({
+    to: { type: new GraphQLNonNull(GraphQLString) },
+    content: { type: new GraphQLNonNull(GraphQLString) },
+  }),
+});

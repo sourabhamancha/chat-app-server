@@ -6,16 +6,20 @@ const {
   GraphQLString,
   GraphQLList,
 } = graphql;
-const { UserInputError, AuthenticationError } = require("apollo-server");
+const { UserInputError } = require("apollo-server");
 
 // Object Types
-const { AuthDataType, UserType } = require("./ObjectType");
+const { AuthDataType, MessageType } = require("./ObjectType");
 
 // Input Types
-const { RegisterUserInputType, LoginUserInputType } = require("./InputType");
+const {
+  RegisterUserInputType,
+  LoginUserInputType,
+  SendMessageInputType,
+} = require("./InputType");
 
 // Models
-const { User } = require("../models");
+const { User, Message } = require("../models");
 
 // validators
 const {
@@ -27,6 +31,7 @@ const {
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { SECRET_KEY } = require("../config/jwt_key");
+const checkAuth = require("../util/checkAuth");
 
 function generateToken(user) {
   return jwt.sign(
@@ -127,13 +132,13 @@ module.exports = new GraphQLObjectType({
         const user = await User.findOne({ where: { username } });
 
         if (!user) {
-          errors.general = "User not found";
+          errors.username = "User not found";
           throw new UserInputError("User not found", { errors });
         }
         const match = await bcrypt.compare(password, user.password);
         if (!match) {
-          errors.general = "Invalid credentials";
-          throw new AuthenticationError("Invalid credentials", { errors });
+          errors.password = "Password is incorrect";
+          throw new UserInputError("Password is incorrect", { errors });
         }
         // generate authToken
         const token = generateToken(user);
@@ -142,6 +147,40 @@ module.exports = new GraphQLObjectType({
           username: user.username,
           token: token,
         };
+      },
+    },
+
+    // send message
+    sendMessage: {
+      type: MessageType,
+      args: {
+        input: {
+          type: SendMessageInputType,
+        },
+      },
+      async resolve(parent, args, context) {
+        const { to, content } = args.input;
+        const user = checkAuth(context);
+        try {
+          const recipient = await User.findOne({ where: { username: to } });
+          if (!recipient) {
+            throw new UserInputError("Recipient does not exist!");
+          }
+          if (recipient.username === user.username) {
+            throw new UserInputError("You cannot send messages to yourself!");
+          }
+          if (content.trim() === "") {
+            throw new UserInputError("Message body cannot be empty");
+          }
+          const message = await Message.create({
+            from: user.username,
+            to,
+            content,
+          });
+          return message;
+        } catch (err) {
+          throw err;
+        }
       },
     },
   },

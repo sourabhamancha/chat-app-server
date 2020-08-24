@@ -26,3 +26,19 @@ module.exports.AuthDataType = new GraphQLObjectType({
     token: { type: new GraphQLNonNull(GraphQLString) },
   }),
 });
+
+module.exports.MessageType = new GraphQLObjectType({
+  name: "MessageType",
+  fields: () => ({
+    uuid: { type: new GraphQLNonNull(GraphQLString) },
+    content: { type: new GraphQLNonNull(GraphQLString) },
+    from: { type: new GraphQLNonNull(GraphQLString) },
+    to: { type: new GraphQLNonNull(GraphQLString) },
+    createdAt: {
+      type: new GraphQLNonNull(GraphQLString),
+      resolve(parent, _) {
+        return parent.createdAt.toISOString();
+      },
+    },
+  }),
+});

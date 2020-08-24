@@ -6,18 +6,19 @@ const {
   GraphQLList,
   GraphQLNonNull,
 } = graphql;
-const { AuthenticationError } = require("apollo-server");
+const { UserInputError } = require("apollo-server");
 // Object Types
-const { UserType } = require("./ObjectType");
+const { UserType, MessageType } = require("./ObjectType");
 
 // models
-const { User } = require("../models");
+const { User, Message } = require("../models");
 
 // modules
 const checkAuth = require("../util/checkAuth");
 
 // sequelize
 const { Op } = require("sequelize");
+
 module.exports = new GraphQLObjectType({
   name: "RootQueryType",
   fields: {
@@ -33,6 +34,38 @@ module.exports = new GraphQLObjectType({
           return users;
         } catch (err) {
           console.log(err);
+        }
+      },
+    },
+
+    // get messages
+    getMessages: {
+      type: new GraphQLList(MessageType),
+      args: {
+        from: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      async resolve(_, { from }, context) {
+        const user = checkAuth(context);
+        try {
+          const otherUser = await User.findOne({
+            where: {
+              username: from,
+            },
+          });
+          if (!otherUser) {
+            throw new UserInputError("User not found");
+          }
+          const usernames = [user.username, otherUser.username];
+          const messages = await Message.findAll({
+            where: {
+              from: { [Op.in]: usernames },
+              to: { [Op.in]: usernames },
+            },
+            order: [["createdAt", "DESC"]],
+          });
+          return messages;
+        } catch (err) {
+          throw err;
         }
       },
     },

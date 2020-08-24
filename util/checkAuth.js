@@ -9,10 +9,7 @@ module.exports = (context) => {
     const token = context.req.headers.authorization.split("Bearer ")[1];
     jwt.verify(token, SECRET_KEY, (err, decodedToken) => {
       if (err) {
-        errors.verification = "cannot verify user";
-        throw new AuthenticationError("Unauthorized to take this action", {
-          errors,
-        });
+        throw new AuthenticationError("Unauthorized to take this action");
       }
       user = decodedToken;
     });
