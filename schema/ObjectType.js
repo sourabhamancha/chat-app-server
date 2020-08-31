@@ -15,6 +15,10 @@ module.exports.UserType = new GraphQLObjectType({
   fields: () => ({
     username: { type: new GraphQLNonNull(GraphQLString) },
     email: { type: new GraphQLNonNull(GraphQLString) },
+    imageUrl: { type: GraphQLString },
+    latestMessage: {
+      type: this.MessageType,
+    },
   }),
 });
 

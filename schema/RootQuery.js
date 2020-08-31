@@ -28,8 +28,28 @@ module.exports = new GraphQLObjectType({
       async resolve(_, __, context) {
         const user = checkAuth(context);
         try {
-          const users = await User.findAll({
+          // get users, except logged user, from users table with required fields
+          let users = await User.findAll({
+            attributes: ["username", "email", "imageUrl"],
             where: { username: { [Op.ne]: user.username } },
+          });
+
+          // get all messages either sent or recieved by logged user
+          const allUserMessages = await Message.findAll({
+            where: {
+              [Op.or]: [{ from: user.username }, { to: user.username }],
+            },
+            order: [["createdAt", "DESC"]],
+          });
+
+          // map every other user with the latest message either sent ot recieved
+          users = users.map((otherUser) => {
+            const latestMessage = allUserMessages.find(
+              (m) =>
+                m.from === otherUser.username || m.to === otherUser.username
+            );
+            otherUser.latestMessage = latestMessage;
+            return otherUser;
           });
           return users;
         } catch (err) {
