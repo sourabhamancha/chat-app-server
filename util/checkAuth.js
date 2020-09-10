@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { SECRET_KEY } = require("../config/jwt_key");
-const { AuthenticationError } = require("apollo-server");
+const { AuthenticationError, PubSub } = require("apollo-server");
+
+const pubsub = new PubSub();
 
 module.exports = (context) => {
   let user = null;
@@ -16,6 +18,7 @@ module.exports = (context) => {
         throw new AuthenticationError("Unauthorized to take this action");
       }
       user = decodedToken;
+      user.pubsub = pubsub;
     });
   }
   return user;

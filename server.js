@@ -1,4 +1,4 @@
-const { ApolloServer, gql } = require("apollo-server");
+const { ApolloServer } = require("apollo-server");
 const schema = require("./schema/schema");
 const { sequelize } = require("./models/index");
 const server = new ApolloServer({
