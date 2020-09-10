@@ -33,6 +33,11 @@ const jwt = require("jsonwebtoken");
 const { SECRET_KEY } = require("../config/jwt_key");
 const checkAuth = require("../util/checkAuth");
 
+// Apollo
+const { PubSub } = require("apollo-server");
+
+const pubsub = new PubSub();
+
 function generateToken(user) {
   return jwt.sign(
     {
@@ -177,6 +182,7 @@ module.exports = new GraphQLObjectType({
             to,
             content,
           });
+          pubsub.publish("NEW_MESSAGE", { newMessage: message });
           return message;
         } catch (err) {
           throw err;
