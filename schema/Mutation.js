@@ -200,6 +200,7 @@ module.exports = new GraphQLObjectType({
       async resolve(_, { uuid, content }, context) {
         let user;
         user = checkAuth(context);
+        const { pubsub } = user;
         const reactions = ["❤️", "😆", "😯", "😢", "😡", "👍", "👎"];
         try {
           if (!reactions.includes(content)) {
@@ -235,6 +236,7 @@ module.exports = new GraphQLObjectType({
             });
           }
 
+          pubsub.publish("NEW_REACTION", { newReaction: reaction });
           return reaction;
         } catch (error) {
           throw error;
