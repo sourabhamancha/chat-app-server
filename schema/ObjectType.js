@@ -46,3 +46,23 @@ module.exports.MessageType = new GraphQLObjectType({
     },
   }),
 });
+
+module.exports.ReactionType = new GraphQLObjectType({
+  name: "ReactionType",
+  fields: () => ({
+    uuid: { type: new GraphQLNonNull(GraphQLString) },
+    content: { type: new GraphQLNonNull(GraphQLString) },
+    createdAt: {
+      type: new GraphQLNonNull(GraphQLString),
+      resolve(parent, _) {
+        return parent.createdAt.toISOString();
+      },
+    },
+    Message: {
+      type: this.MessageType,
+    },
+    User: {
+      type: this.UserType,
+    },
+  }),
+});

@@ -6,10 +6,14 @@ const {
   GraphQLString,
   GraphQLList,
 } = graphql;
-const { UserInputError } = require("apollo-server");
+const {
+  UserInputError,
+  AuthenticationError,
+  ForbiddenError,
+} = require("apollo-server");
 
 // Object Types
-const { AuthDataType, MessageType } = require("./ObjectType");
+const { AuthDataType, MessageType, ReactionType } = require("./ObjectType");
 
 // Input Types
 const {
@@ -19,7 +23,7 @@ const {
 } = require("./InputType");
 
 // Models
-const { User, Message } = require("../models");
+const { User, Message, Reaction } = require("../models");
 
 // validators
 const {
@@ -182,6 +186,58 @@ module.exports = new GraphQLObjectType({
           return message;
         } catch (err) {
           throw err;
+        }
+      },
+    },
+
+    // react to a message
+    reactToMessage: {
+      type: ReactionType,
+      args: {
+        uuid: { type: new GraphQLNonNull(GraphQLString) },
+        content: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      async resolve(_, { uuid, content }, context) {
+        let user;
+        user = checkAuth(context);
+        const reactions = ["❤️", "😆", "😯", "😢", "😡", "👍", "👎"];
+        try {
+          if (!reactions.includes(content)) {
+            throw new UserInputError("Invalid reaction");
+          }
+          // get user
+          const username = user ? user.username : "";
+          user = await User.findOne({ where: { username } });
+          if (!user) throw new AuthenticationError("Unauthenticated");
+          // get message
+          const message = await Message.findOne({ where: { uuid } });
+          if (!message) throw new UserInputError("Message not found");
+
+          if (message.from !== user.username && message.to !== user.username) {
+            throw new ForbiddenError("Unauthorized to take this action!");
+          }
+
+          let reaction = await Reaction.findOne({
+            where: {
+              messageId: message.id,
+              userId: user.id,
+            },
+          });
+
+          if (reaction) {
+            reaction.content = content;
+            await reaction.save();
+          } else {
+            reaction = await Reaction.create({
+              messageId: message.id,
+              userId: user.id,
+              content,
+            });
+          }
+
+          return reaction;
+        } catch (error) {
+          throw error;
         }
       },
     },
