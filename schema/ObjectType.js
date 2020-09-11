@@ -10,6 +10,9 @@ const {
   GraphQLBoolean,
 } = graphql;
 
+// models
+const { User, Message } = require("../models");
+
 module.exports.UserType = new GraphQLObjectType({
   name: "UserType",
   fields: () => ({
@@ -60,9 +63,15 @@ module.exports.ReactionType = new GraphQLObjectType({
     },
     Message: {
       type: this.MessageType,
+      async resolve(parent) {
+        return await Message.findByPk(parent.messageId);
+      },
     },
     User: {
       type: this.UserType,
+      async resolve(parent) {
+        return await User.findByPk(parent.userId);
+      },
     },
   }),
 });
