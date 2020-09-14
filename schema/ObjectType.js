@@ -61,13 +61,13 @@ module.exports.ReactionType = new GraphQLObjectType({
         return parent.createdAt.toISOString();
       },
     },
-    Message: {
+    message: {
       type: this.MessageType,
       async resolve(parent) {
         return await Message.findByPk(parent.messageId);
       },
     },
-    User: {
+    user: {
       type: this.UserType,
       async resolve(parent) {
         return await User.findByPk(parent.userId);
