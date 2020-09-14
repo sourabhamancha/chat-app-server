@@ -11,7 +11,7 @@ const {
 } = graphql;
 
 // models
-const { User, Message } = require("../models");
+const { User, Message, Reaction } = require("../models");
 
 module.exports.UserType = new GraphQLObjectType({
   name: "UserType",
@@ -46,6 +46,9 @@ module.exports.MessageType = new GraphQLObjectType({
       resolve(parent, _) {
         return parent.createdAt.toISOString();
       },
+    },
+    reactions: {
+      type: new GraphQLList(this.ReactionType),
     },
   }),
 });

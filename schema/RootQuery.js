@@ -11,7 +11,7 @@ const { UserInputError } = require("apollo-server");
 const { UserType, MessageType } = require("./ObjectType");
 
 // models
-const { User, Message } = require("../models");
+const { User, Message, Reaction } = require("../models");
 
 // modules
 const checkAuth = require("../util/checkAuth");
@@ -82,6 +82,7 @@ module.exports = new GraphQLObjectType({
               to: { [Op.in]: usernames },
             },
             order: [["createdAt", "DESC"]],
+            include: [{ model: Reaction, as: "reactions" }],
           });
           return messages;
         } catch (err) {
