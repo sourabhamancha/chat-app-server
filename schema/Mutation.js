@@ -34,7 +34,6 @@ const {
 // modules
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { SECRET_KEY } = require("../config/jwt_key");
 const checkAuth = require("../util/checkAuth");
 
 function generateToken(user) {
@@ -43,7 +42,7 @@ function generateToken(user) {
       email: user.email,
       username: user.username,
     },
-    SECRET_KEY,
+    process.env.SECRET_KEY,
     { expiresIn: "1h" }
   );
 }
