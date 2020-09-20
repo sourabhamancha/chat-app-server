@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const { SECRET_KEY } = require("../config/jwt_key");
 const { AuthenticationError, PubSub } = require("apollo-server");
 
 const pubsub = new PubSub();
@@ -12,7 +13,7 @@ module.exports = (context) => {
     token = context.connection.context.Authorization.split("Bearer ")[1];
   }
   if (token) {
-    jwt.verify(token, process.env.SECRET_KEY, (err, decodedToken) => {
+    jwt.verify(token, SECRET_KEY, (err, decodedToken) => {
       if (err) {
         throw new AuthenticationError("Unauthorized to take this action");
       }
