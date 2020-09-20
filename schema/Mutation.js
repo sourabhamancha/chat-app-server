@@ -95,6 +95,7 @@ module.exports = new GraphQLObjectType({
             username,
             email,
             password: hasedPassword,
+            imageUrl,
           });
 
           // create authentication token
